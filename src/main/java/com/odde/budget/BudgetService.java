@@ -28,25 +28,33 @@ public class BudgetService {
             result += budget.getAmount();
         }
         if (startYear == endYear && startMonthValue == endMonthValue) {
-            YearMonth currentYearMonth = YearMonth.of(startYear, startMonthValue);
-            int dayBudget = getBudget(currentYearMonth).getBudgetPerDay();
-            for (int i = startDayOfMonth; i <= endDayOfMonth; i++) {
-                result += dayBudget;
-            }
+            result = getBudgetInEndMonth(startYear, startMonthValue, startDayOfMonth, endDayOfMonth);
         } else {
-            YearMonth startYearMonth = YearMonth.of(startYear, startMonthValue);
-            int startDayBudget = getBudget(startYearMonth).getBudgetPerDay();
-            for (int i = startDayOfMonth; i <= startYearMonth.getMonth().length(startYearMonth.isLeapYear()); i++) {
-                result += startDayBudget;
-            }
+            result += getBudgetInStartMonth(startYear, startMonthValue, startDayOfMonth);
 
-            YearMonth endYearMonth = YearMonth.of(endYear, endMonthValue);
-            int endDayBudget = getBudget(endYearMonth).getBudgetPerDay();
-            for (int i = 1; i <= endDayOfMonth; i++) {
-                result += endDayBudget;
-            }
+            result += getBudgetInEndMonth(endYear, endMonthValue, 1, endDayOfMonth);
         }
 
+        return result;
+    }
+
+    private long getBudgetInStartMonth(int startYear, int startMonthValue, int startDayOfMonth) {
+        YearMonth startYearMonth = YearMonth.of(startYear, startMonthValue);
+        int startDayBudget = getBudget(startYearMonth).getBudgetPerDay();
+        long result = 0L;
+        for (int i = startDayOfMonth; i <= startYearMonth.getMonth().length(startYearMonth.isLeapYear()); i++) {
+            result += startDayBudget;
+        }
+        return result;
+    }
+
+    private long getBudgetInEndMonth(int endYear, int endMonthValue, int startDay, int endDayOfMonth) {
+        YearMonth endYearMonth = YearMonth.of(endYear, endMonthValue);
+        int endDayBudget = getBudget(endYearMonth).getBudgetPerDay();
+        long result = 0L;
+        for (int i = startDay; i <= endDayOfMonth; i++) {
+            result += endDayBudget;
+        }
         return result;
     }
 
@@ -62,12 +70,7 @@ public class BudgetService {
         YearMonth current = YearMonth.of(startYear, startMonthValue).plusMonths(1);
         while (current.isBefore(endYearMonth)) {
             result.add(current);
-            startMonthValue++;
-            if (startMonthValue > 12) {
-                startYear++;
-                startMonthValue = 1;
-            }
-            current = YearMonth.of(startYear, startMonthValue).plusMonths(1);
+            current = current.plusMonths(1);
         }
         return result;
     }
