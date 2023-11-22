@@ -12,23 +12,17 @@ public class BudgetService {
     }
 
     public long queryBudget(LocalDate start, LocalDate end) {
-        if (budgetRepo.findAll().isEmpty()) {
-            return 0;
-        }
-        Budget firstBudget = budgetRepo.findAll().get(0);
-        return getOverlappingDayCount(start, end, firstBudget);
+        return budgetRepo.findAll().stream()
+                .mapToInt(budget -> getOverlappingDayCount(start, end, budget))
+                .sum();
     }
 
     private int getOverlappingDayCount(LocalDate start, LocalDate end, Budget firstBudget) {
-        if (end.isBefore(firstBudget.getStart())) {
+        if (end.isBefore(firstBudget.getStart()) || start.isAfter(firstBudget.getEnd())) {
             return 0;
         }
-        if (firstBudget.getEnd().isBefore(end)) {
-            return Period.between(start, firstBudget.getEnd()).getDays() + 1;
-        }
-        if (firstBudget.getStart().isAfter(start)) {
-            return Period.between(firstBudget.getStart(), end).getDays() + 1;
-        }
-        return Period.between(start, end).getDays() + 1;
+        LocalDate overlappingStart = start.isAfter(firstBudget.getStart()) ? start : firstBudget.getStart();
+        LocalDate overlappingEnd = end.isBefore(firstBudget.getEnd()) ? end : firstBudget.getEnd();
+        return Period.between(overlappingStart, overlappingEnd).getDays() + 1;
     }
 }

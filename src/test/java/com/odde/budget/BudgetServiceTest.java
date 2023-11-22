@@ -80,8 +80,31 @@ class BudgetServiceTest {
         assertThat(total).isEqualTo(0);
     }
 
-    private void givenBudget(Budget budget) {
-        when(stubBudgetRepo.findAll()).thenReturn(asList(budget));
+    @Test
+    public void period_start_is_after_budget_end() {
+        givenBudget(new Budget(YearMonth.of(2023, Month.NOVEMBER), 30));
+
+        long total = budgetService.queryBudget(
+                LocalDate.of(2023, 12, 5),
+                LocalDate.of(2023, 12, 6));
+
+        assertThat(total).isEqualTo(0);
+    }
+
+    @Test
+    public void two_budgets() {
+        givenBudget(new Budget(YearMonth.of(2023, Month.NOVEMBER), 30),
+                new Budget(YearMonth.of(2023, Month.OCTOBER), 31));
+
+        long total = budgetService.queryBudget(
+                LocalDate.of(2023, 10, 15),
+                LocalDate.of(2023, 11, 7));
+
+        assertThat(total).isEqualTo(17 + 7);
+    }
+
+    private void givenBudget(Budget... budgets) {
+        when(stubBudgetRepo.findAll()).thenReturn(asList(budgets));
     }
 
 }
