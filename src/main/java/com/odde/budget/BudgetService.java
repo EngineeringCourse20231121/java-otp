@@ -15,21 +15,20 @@ public class BudgetService {
 
     public long queryBudget(LocalDate start, LocalDate end) {
         if (start.isAfter(end)) return 0;
+
+        if (YearMonth.from(start).equals(YearMonth.from(end))) {
+            return getBudgetInSingleMonth(start, end);
+        }
+
         long result = 0;
 
-        List<YearMonth> periodMonth = getPeriodMonth(start, end);
-        for (YearMonth currentYearMonth : periodMonth) {
-            Budget budget = getBudget(currentYearMonth);
+        result += getBudgetInSingleMonth(start, YearMonth.from(start).atEndOfMonth());
+
+        for (Budget budget : getBudgets(start, end)) {
             result += budget.getAmount();
         }
 
-        if (YearMonth.from(start).equals(YearMonth.from(end))) {
-            result = getBudgetInSingleMonth(start, end);
-        } else {
-            result += getBudgetInSingleMonth(start, YearMonth.from(start).atEndOfMonth());
-
-            result += getBudgetInSingleMonth(YearMonth.from(end).atDay(1), end);
-        }
+        result += getBudgetInSingleMonth(YearMonth.from(end).atDay(1), end);
 
         return result;
     }
@@ -49,20 +48,13 @@ public class BudgetService {
         return (long) budget * (Period.between(start, end).getDays() + 1);
     }
 
-    private List<YearMonth> getPeriodMonth(LocalDate start, LocalDate end) {
-        int startYear = start.getYear();
-        int startMonthValue = start.getMonthValue();
-        int endYear = end.getYear();
-        int endMonthValue = end.getMonthValue();
-
-        YearMonth endYearMonth = YearMonth.of(endYear, endMonthValue);
-
-        List<YearMonth> result = new ArrayList<>();
-        YearMonth current = YearMonth.of(startYear, startMonthValue).plusMonths(1);
-        while (current.isBefore(endYearMonth)) {
-            result.add(current);
+    private List<Budget> getBudgets(LocalDate start, LocalDate end) {
+        List<Budget> budgets = new ArrayList<>();
+        YearMonth current = YearMonth.from(start).plusMonths(1);
+        while (current.isBefore(YearMonth.from(end))) {
+            budgets.add(getBudget(current));
             current = current.plusMonths(1);
         }
-        return result;
+        return budgets;
     }
 }
