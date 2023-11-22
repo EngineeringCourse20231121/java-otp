@@ -20,6 +20,9 @@ public class BudgetService {
     }
 
     private int getOverlappingDayCount(LocalDate start, LocalDate end, Budget firstBudget) {
+        if (end.isBefore(firstBudget.getStart())) {
+            return 0;
+        }
         if (firstBudget.getEnd().isBefore(end)) {
             return Period.between(start, firstBudget.getEnd()).getDays() + 1;
         }
