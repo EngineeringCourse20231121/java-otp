@@ -1,6 +1,7 @@
 package com.odde.budget;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,12 +15,6 @@ public class BudgetService {
 
     public long queryBudget(LocalDate start, LocalDate end) {
         if (start.isAfter(end)) return 0;
-        int startYear = start.getYear();
-        int startMonthValue = start.getMonthValue();
-        int startDayOfMonth = start.getDayOfMonth();
-        int endYear = end.getYear();
-        int endMonthValue = end.getMonthValue();
-        int endDayOfMonth = end.getDayOfMonth();
         long result = 0;
 
         List<YearMonth> periodMonth = getPeriodMonth(start, end);
@@ -27,35 +22,31 @@ public class BudgetService {
             Budget budget = getBudget(currentYearMonth);
             result += budget.getAmount();
         }
-        if (startYear == endYear && startMonthValue == endMonthValue) {
-            result = getBudgetInEndMonth(startYear, startMonthValue, startDayOfMonth, endDayOfMonth);
+
+        if (YearMonth.from(start).equals(YearMonth.from(end))) {
+            result = getBudgetInSingleMonth(start, end);
         } else {
-            result += getBudgetInStartMonth(startYear, startMonthValue, startDayOfMonth);
+            result += getBudgetInSingleMonth(start, YearMonth.from(start).atEndOfMonth());
 
-            result += getBudgetInEndMonth(endYear, endMonthValue, 1, endDayOfMonth);
+            result += getBudgetInSingleMonth(YearMonth.from(end).atDay(1), end);
         }
 
         return result;
     }
 
-    private long getBudgetInStartMonth(int startYear, int startMonthValue, int startDayOfMonth) {
-        YearMonth startYearMonth = YearMonth.of(startYear, startMonthValue);
-        int startDayBudget = getBudget(startYearMonth).getBudgetPerDay();
-        long result = 0L;
-        for (int i = startDayOfMonth; i <= startYearMonth.getMonth().length(startYearMonth.isLeapYear()); i++) {
-            result += startDayBudget;
+    private Budget getBudget(YearMonth yearMonth) {
+        for (int i = 0; i < budgetList.size(); i++) {
+            if (budgetList.get(i).getYearMonth().equals(yearMonth)) {
+                return budgetList.get(i);
+            }
         }
-        return result;
+
+        return new Budget(yearMonth, 0);
     }
 
-    private long getBudgetInEndMonth(int endYear, int endMonthValue, int startDay, int endDayOfMonth) {
-        YearMonth endYearMonth = YearMonth.of(endYear, endMonthValue);
-        int endDayBudget = getBudget(endYearMonth).getBudgetPerDay();
-        long result = 0L;
-        for (int i = startDay; i <= endDayOfMonth; i++) {
-            result += endDayBudget;
-        }
-        return result;
+    private long getBudgetInSingleMonth(LocalDate start, LocalDate end) {
+        int budget = getBudget(YearMonth.from(start)).getBudgetPerDay();
+        return (long) budget * (Period.between(start, end).getDays() + 1);
     }
 
     private List<YearMonth> getPeriodMonth(LocalDate start, LocalDate end) {
@@ -73,15 +64,5 @@ public class BudgetService {
             current = current.plusMonths(1);
         }
         return result;
-    }
-
-    private Budget getBudget(YearMonth yearMonth) {
-        for (int i = 0; i < budgetList.size(); i++) {
-            if (budgetList.get(i).getYearMonth().equals(yearMonth)) {
-                return budgetList.get(i);
-            }
-        }
-
-        return new Budget(yearMonth, 0);
     }
 }
