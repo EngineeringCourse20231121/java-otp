@@ -13,7 +13,9 @@ public class BudgetService {
 
     public long queryBudget(LocalDate start, LocalDate end) {
         return budgetRepo.findAll().stream()
-                .mapToInt(budget -> getOverlappingDayCount(start, end, budget))
+                .mapToInt(budget -> {
+                    return budget.getDailyAmount() * getOverlappingDayCount(start, end, budget);
+                })
                 .sum();
     }
 

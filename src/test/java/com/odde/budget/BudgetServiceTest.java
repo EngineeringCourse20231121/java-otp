@@ -103,6 +103,17 @@ class BudgetServiceTest {
         assertThat(total).isEqualTo(17 + 7);
     }
 
+    @Test
+    public void daily_amount() {
+        givenBudget(new Budget(YearMonth.of(2023, Month.JULY), 620));
+
+        long total = budgetService.queryBudget(
+                LocalDate.of(2023, 7, 7),
+                LocalDate.of(2023, 7, 17));
+
+        assertThat(total).isEqualTo(11 * 20);
+    }
+
     private void givenBudget(Budget... budgets) {
         when(stubBudgetRepo.findAll()).thenReturn(asList(budgets));
     }
