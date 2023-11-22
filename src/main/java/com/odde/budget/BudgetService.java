@@ -38,11 +38,17 @@ public class BudgetService {
         return budgets;
     }
 
+    private int getOverlappingDayCount(TimePeriod timePeriod, Budget budget) {
+        LocalDate overlappingStart = timePeriod.getStart().isAfter(budget.getStart()) ? timePeriod.getStart() : budget.getStart();
+        LocalDate overlappingEnd = timePeriod.getEnd().isBefore(budget.getEnd()) ? timePeriod.getEnd() : budget.getEnd();
+        return new TimePeriod(overlappingStart, overlappingEnd).getDayCount();
+    }
+
     private long queryBudgetInTimePeriod(TimePeriod timePeriod) {
         long result = 0;
 
         for (Budget budget : getBudgets(timePeriod.getStart(), timePeriod.getEnd())) {
-            result += (long) budget.getBudgetPerDay() * new TimePeriod(timePeriod.getStart().isAfter(budget.getStart()) ? timePeriod.getStart() : budget.getStart(), timePeriod.getEnd().isBefore(budget.getEnd()) ? timePeriod.getEnd() : budget.getEnd()).getDayCount();
+            result += (long) budget.getBudgetPerDay() * getOverlappingDayCount(timePeriod, budget);
         }
 
         return result;
