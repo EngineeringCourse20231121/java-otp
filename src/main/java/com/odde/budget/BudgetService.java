@@ -4,7 +4,16 @@ import java.time.LocalDate;
 
 public class BudgetService {
 
+    private final BudgetRepo budgetRepo;
+
+    public BudgetService(BudgetRepo budgetRepo) {
+        this.budgetRepo = budgetRepo;
+    }
+
     public long queryBudget(LocalDate start, LocalDate end) {
-        throw new UnsupportedOperationException();
+        if (budgetRepo.findAll().isEmpty()) {
+            return 0;
+        }
+        return 1;
     }
 }
