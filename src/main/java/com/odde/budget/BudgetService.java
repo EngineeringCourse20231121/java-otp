@@ -1,6 +1,7 @@
 package com.odde.budget;
 
 import java.time.LocalDate;
+import java.time.Period;
 
 public class BudgetService {
 
@@ -14,6 +15,6 @@ public class BudgetService {
         if (budgetRepo.findAll().isEmpty()) {
             return 0;
         }
-        return 1;
+        return Period.between(start, end).getDays() + 1;
     }
 }
