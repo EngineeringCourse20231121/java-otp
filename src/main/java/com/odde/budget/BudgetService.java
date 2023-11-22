@@ -28,15 +28,10 @@ public class BudgetService {
         return new Budget(yearMonth, 0);
     }
 
-    private long getBudgetInSingleMonth(TimePeriod timePeriod) {
-        int budget = getBudget(YearMonth.from(timePeriod.getStart())).getBudgetPerDay();
-        return (long) budget * timePeriod.getDayCount();
-    }
-
     private List<Budget> getBudgets(LocalDate start, LocalDate end) {
         List<Budget> budgets = new ArrayList<>();
-        YearMonth current = YearMonth.from(start).plusMonths(1);
-        while (current.isBefore(YearMonth.from(end))) {
+        YearMonth current = YearMonth.from(start);
+        while (current.isBefore(YearMonth.from(end).plusMonths(1))) {
             budgets.add(getBudget(current));
             current = current.plusMonths(1);
         }
@@ -44,20 +39,13 @@ public class BudgetService {
     }
 
     private long queryBudgetInTimePeriod(TimePeriod timePeriod) {
-        if (YearMonth.from(timePeriod.getStart()).equals(YearMonth.from(timePeriod.getEnd()))) {
-            return getBudgetInSingleMonth(timePeriod);
-        }
-
         long result = 0;
 
-        result += getBudgetInSingleMonth(new TimePeriod(timePeriod.getStart(), YearMonth.from(timePeriod.getStart()).atEndOfMonth()));
-
         for (Budget budget : getBudgets(timePeriod.getStart(), timePeriod.getEnd())) {
-            result += budget.getAmount();
+            result += (long) budget.getBudgetPerDay() * new TimePeriod(timePeriod.getStart().isAfter(budget.getStart()) ? timePeriod.getStart() : budget.getStart(), timePeriod.getEnd().isBefore(budget.getEnd()) ? timePeriod.getEnd() : budget.getEnd()).getDayCount();
         }
-
-        result += getBudgetInSingleMonth(new TimePeriod(YearMonth.from(timePeriod.getEnd()).atDay(1), timePeriod.getEnd()));
 
         return result;
     }
+
 }
