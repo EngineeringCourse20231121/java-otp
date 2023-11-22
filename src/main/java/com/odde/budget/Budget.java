@@ -1,9 +1,16 @@
 package com.odde.budget;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 
 public class Budget {
-    public Budget(YearMonth yearMonth, int amount) {
+    private final YearMonth yearMonth;
 
+    public Budget(YearMonth yearMonth, int amount) {
+        this.yearMonth = yearMonth;
+    }
+
+    public LocalDate getStart() {
+        return yearMonth.atDay(1);
     }
 }

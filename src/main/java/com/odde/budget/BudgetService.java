@@ -15,6 +15,10 @@ public class BudgetService {
         if (budgetRepo.findAll().isEmpty()) {
             return 0;
         }
+        Budget firstBudget = budgetRepo.findAll().get(0);
+        if (firstBudget.getStart().isAfter(start)) {
+            return Period.between(firstBudget.getStart(), end).getDays() + 1;
+        }
         return Period.between(start, end).getDays() + 1;
     }
 }
