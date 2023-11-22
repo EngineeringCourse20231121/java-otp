@@ -1,7 +1,6 @@
 package com.odde.budget;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,21 +15,7 @@ public class BudgetService {
     public long queryBudget(LocalDate start, LocalDate end) {
         if (start.isAfter(end)) return 0;
 
-        if (YearMonth.from(start).equals(YearMonth.from(end))) {
-            return getBudgetInSingleMonth(start, end);
-        }
-
-        long result = 0;
-
-        result += getBudgetInSingleMonth(start, YearMonth.from(start).atEndOfMonth());
-
-        for (Budget budget : getBudgets(start, end)) {
-            result += budget.getAmount();
-        }
-
-        result += getBudgetInSingleMonth(YearMonth.from(end).atDay(1), end);
-
-        return result;
+        return queryBudgetInTimePeriod(new TimePeriod(start, end));
     }
 
     private Budget getBudget(YearMonth yearMonth) {
@@ -43,9 +28,9 @@ public class BudgetService {
         return new Budget(yearMonth, 0);
     }
 
-    private long getBudgetInSingleMonth(LocalDate start, LocalDate end) {
-        int budget = getBudget(YearMonth.from(start)).getBudgetPerDay();
-        return (long) budget * (Period.between(start, end).getDays() + 1);
+    private long getBudgetInSingleMonth(TimePeriod timePeriod) {
+        int budget = getBudget(YearMonth.from(timePeriod.getStart())).getBudgetPerDay();
+        return (long) budget * timePeriod.getDayCount();
     }
 
     private List<Budget> getBudgets(LocalDate start, LocalDate end) {
@@ -56,5 +41,23 @@ public class BudgetService {
             current = current.plusMonths(1);
         }
         return budgets;
+    }
+
+    private long queryBudgetInTimePeriod(TimePeriod timePeriod) {
+        if (YearMonth.from(timePeriod.getStart()).equals(YearMonth.from(timePeriod.getEnd()))) {
+            return getBudgetInSingleMonth(timePeriod);
+        }
+
+        long result = 0;
+
+        result += getBudgetInSingleMonth(new TimePeriod(timePeriod.getStart(), YearMonth.from(timePeriod.getStart()).atEndOfMonth()));
+
+        for (Budget budget : getBudgets(timePeriod.getStart(), timePeriod.getEnd())) {
+            result += budget.getAmount();
+        }
+
+        result += getBudgetInSingleMonth(new TimePeriod(YearMonth.from(timePeriod.getEnd()).atDay(1), timePeriod.getEnd()));
+
+        return result;
     }
 }
