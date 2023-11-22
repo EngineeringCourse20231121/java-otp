@@ -12,15 +12,16 @@ public class TimePeriod {
         this.end = end;
     }
 
-    public LocalDate getStart() {
-        return start;
+    public int getOverlappingDayCount(TimePeriod budgetTimePeriod) {
+        LocalDate overlappingStart = start.isAfter(budgetTimePeriod.start) ? start : budgetTimePeriod.start;
+        LocalDate overlappingEnd = end.isBefore(budgetTimePeriod.end) ? end : budgetTimePeriod.end;
+        if (overlappingStart.isAfter(overlappingEnd)) {
+            return 0;
+        }
+        return new TimePeriod(overlappingStart, overlappingEnd).getDayCount();
     }
 
-    public LocalDate getEnd() {
-        return end;
-    }
-
-    public int getDayCount() {
+    private int getDayCount() {
         return Period.between(start, end).getDays() + 1;
     }
 }

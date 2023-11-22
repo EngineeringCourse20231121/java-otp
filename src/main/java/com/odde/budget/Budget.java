@@ -13,23 +13,23 @@ public class Budget {
         this.amount = amount;
     }
 
-    public YearMonth getYearMonth() {
-        return yearMonth;
+    public long getOverlappingAmount(TimePeriod timePeriod) {
+        return (long) getBudgetPerDay() * timePeriod.getOverlappingDayCount(getPeriod());
     }
 
-    public int getAmount() {
-        return amount;
-    }
-
-    public int getBudgetPerDay() {
+    private int getBudgetPerDay() {
         return amount / yearMonth.getMonth().length(yearMonth.isLeapYear());
     }
 
-    public LocalDate getStart() {
-        return yearMonth.atDay(1);
+    private LocalDate getEnd() {
+        return yearMonth.atEndOfMonth();
     }
 
-    LocalDate getEnd() {
-        return yearMonth.atEndOfMonth();
+    private TimePeriod getPeriod() {
+        return new TimePeriod(getStart(), getEnd());
+    }
+
+    private LocalDate getStart() {
+        return yearMonth.atDay(1);
     }
 }
