@@ -13,4 +13,8 @@ public class Budget {
     public LocalDate getStart() {
         return yearMonth.atDay(1);
     }
+
+    public LocalDate getEnd() {
+        return yearMonth.atEndOfMonth();
+    }
 }

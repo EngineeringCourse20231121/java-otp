@@ -58,6 +58,17 @@ class BudgetServiceTest {
         assertThat(total).isEqualTo(2);
     }
 
+    @Test
+    public void period_start_with_budget_end() {
+        givenBudget(new Budget(YearMonth.of(2023, Month.NOVEMBER), 30));
+
+        long total = budgetService.queryBudget(
+                LocalDate.of(2023, 11, 15),
+                LocalDate.of(2023, 12, 10));
+
+        assertThat(total).isEqualTo(16);
+    }
+
     private void givenBudget(Budget budget) {
         when(stubBudgetRepo.findAll()).thenReturn(asList(budget));
     }

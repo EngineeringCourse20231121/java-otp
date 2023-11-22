@@ -16,6 +16,13 @@ public class BudgetService {
             return 0;
         }
         Budget firstBudget = budgetRepo.findAll().get(0);
+        return getOverlappingDayCount(start, end, firstBudget);
+    }
+
+    private int getOverlappingDayCount(LocalDate start, LocalDate end, Budget firstBudget) {
+        if (firstBudget.getEnd().isBefore(end)) {
+            return Period.between(start, firstBudget.getEnd()).getDays() + 1;
+        }
         if (firstBudget.getStart().isAfter(start)) {
             return Period.between(firstBudget.getStart(), end).getDays() + 1;
         }
